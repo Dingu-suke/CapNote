@@ -145,21 +145,43 @@ struct SettingsView: View {
 
     private var saveSection: some View {
         section("保存先 (出力先が「ファイル」の時に使用)") {
-            row("録画 (mp4)") {
-                TextField("", text: $app.settings.movieDirectory)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 12))
-                    .frame(width: 240)
-            }
-            row("スクショ (png)") {
-                TextField("", text: $app.settings.pictureDirectory)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 12))
-                    .frame(width: 240)
-            }
+            directoryRow("録画 (mp4)", text: $app.settings.movieDirectory)
+            directoryRow("スクショ (png)", text: $app.settings.pictureDirectory)
             Text("ファイル名: rec_日時.mp4 / shot_日時.png")
                 .font(.system(size: 11))
                 .foregroundStyle(Brand.textLo)
+        }
+    }
+
+    private func directoryRow(_ label: String, text: Binding<String>) -> some View {
+        row(label) {
+            HStack(spacing: 6) {
+                TextField("", text: text)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(size: 12))
+                    .frame(width: 210)
+                Button("選択…") {
+                    chooseDirectory(into: text)
+                }
+                .buttonStyle(GhostButtonStyle())
+                .help("フォルダをFinderで選択")
+            }
+        }
+    }
+
+    /// フォルダ選択パネル。選んだパスは ~ 短縮表記で保存
+    private func chooseDirectory(into binding: Binding<String>) {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.prompt = "選択"
+        let current = (binding.wrappedValue as NSString).expandingTildeInPath
+        if FileManager.default.fileExists(atPath: current) {
+            panel.directoryURL = URL(fileURLWithPath: current)
+        }
+        if panel.runModal() == .OK, let url = panel.url {
+            binding.wrappedValue = (url.path as NSString).abbreviatingWithTildeInPath
         }
     }
 
