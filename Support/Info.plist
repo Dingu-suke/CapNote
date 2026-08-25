@@ -23,7 +23,7 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>14.0</string>
+	<string>15.0</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 	<key>NSHighResolutionCapable</key>
@@ -32,6 +32,8 @@
 	<string>NSApplication</string>
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>録画・スクリーンショットのために画面を収録します。</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>マイク音声を録画に含めるために使用します。</string>
 	<key>NSAccessibilityUsageDescription</key>
 	<string>録画中のクリック位置に波紋を表示するため、クリックを検知します。</string>
 	<key>NSHumanReadableCopyright</key>

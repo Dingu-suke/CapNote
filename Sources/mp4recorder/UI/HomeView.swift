@@ -126,6 +126,22 @@ struct HomeView: View {
                 .tint(Brand.text)
                 .frame(width: 160)
             }
+            Divider().overlay(Brand.border)
+            settingRow(icon: "speaker.wave.2", label: "システム音声") {
+                Toggle("", isOn: $app.settings.captureSystemAudio)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .tint(Brand.teal)
+            }
+            Divider().overlay(Brand.border)
+            settingRow(icon: "mic", label: "マイク") {
+                Toggle("", isOn: $app.settings.captureMicrophone)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .tint(Brand.teal)
+            }
         }
         .card()
     }

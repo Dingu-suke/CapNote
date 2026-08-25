@@ -7,14 +7,25 @@ final class FloatingStopBar {
     private var panel: NSPanel?
     private var timeLabel: NSTextField?
     private var timer: Timer?
+    private var levelTimer: Timer?
     private var startedAt: Date?
+    private var systemMeter: AudioMeterView?
+    private var micMeter: AudioMeterView?
     var onStop: (() -> Void)?
 
     var windowNumber: Int? { panel?.windowNumber }
 
-    func show(on screen: NSScreen) {
+    /// systemAudio / mic: 録音中のソース。メーターは常時2つ表示し、OFFのものは斜線アイコンで消灯
+    func show(
+        on screen: NSScreen,
+        systemAudio: Bool = false,
+        mic: Bool = false,
+        levels: (() -> (system: Float?, mic: Float?))? = nil
+    ) {
         hide()
-        let width: CGFloat = 220, height: CGFloat = 44
+        let meterWidth: CGFloat = 56
+        let width: CGFloat = 220 + meterWidth * 2
+        let height: CGFloat = 44
         let rect = NSRect(
             x: screen.frame.midX - width / 2,
             y: screen.frame.minY + 32,
@@ -52,6 +63,23 @@ final class FloatingStopBar {
         container.addSubview(stopButton)
         container.addSubview(time)
         container.addSubview(rec)
+
+        // 音声レベルメーター (常時2つ。OFFは斜線アイコン+消灯で「入っていない」ことを示す)
+        let sysM = AudioMeterView(
+            symbol: "speaker.wave.2.fill", disabledSymbol: "speaker.slash.fill",
+            enabled: systemAudio,
+            frame: NSRect(x: 212, y: 12, width: meterWidth - 6, height: 20)
+        )
+        container.addSubview(sysM)
+        systemMeter = sysM
+        let micM = AudioMeterView(
+            symbol: "mic.fill", disabledSymbol: "mic.slash.fill",
+            enabled: mic,
+            frame: NSRect(x: 212 + meterWidth, y: 12, width: meterWidth - 6, height: 20)
+        )
+        container.addSubview(micM)
+        micMeter = micM
+
         panel.contentView = container
         panel.orderFrontRegardless()
 
@@ -63,19 +91,89 @@ final class FloatingStopBar {
             let sec = Int(Date().timeIntervalSince(started))
             self.timeLabel?.stringValue = String(format: "%02d:%02d", sec / 60, sec % 60)
         }
+        if let levels, systemAudio || mic {
+            levelTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+                guard let self else { return }
+                let v = levels()
+                self.systemMeter?.setRMS(v.system ?? 0)
+                self.micMeter?.setRMS(v.mic ?? 0)
+            }
+        }
     }
 
     func hide() {
         timer?.invalidate()
         timer = nil
+        levelTimer?.invalidate()
+        levelTimer = nil
         panel?.orderOut(nil)
         panel = nil
         timeLabel = nil
+        systemMeter = nil
+        micMeter = nil
         startedAt = nil
     }
 
     @objc private func stopPressed() {
         onStop?()
+    }
+}
+
+/// 停止バー内の小さな音声レベルメーター (アイコン + 横バー)。
+/// 音が入っているかの確認用なので厳密なdB表示はしない。
+final class AudioMeterView: NSView {
+    private let fill = CALayer()
+    private let track = CALayer()
+    private let enabled: Bool
+    private var displayLevel: Float = 0
+    private let barX: CGFloat = 21
+    private var barWidth: CGFloat { bounds.width - barX }
+
+    init(symbol: String, disabledSymbol: String, enabled: Bool, frame: NSRect) {
+        self.enabled = enabled
+        super.init(frame: frame)
+        wantsLayer = true
+
+        let icon = NSImageView(frame: NSRect(x: 0, y: 2, width: 17, height: 16))
+        icon.image = NSImage(
+            systemSymbolName: enabled ? symbol : disabledSymbol,
+            accessibilityDescription: nil
+        )?.withSymbolConfiguration(.init(pointSize: 12, weight: .semibold))
+        // ON = ティール (録音中) / OFF = 赤の斜線 (入っていない) — Discord風に一目で分かる配色
+        icon.contentTintColor = enabled
+            ? NSColor(hexRGB: 0x2BD9A9)
+            : NSColor(hexRGB: 0xFF5D5D).withAlphaComponent(0.9)
+        addSubview(icon)
+
+        track.frame = NSRect(x: barX, y: bounds.height / 2 - 2, width: barWidth, height: 4)
+        track.backgroundColor = enabled
+            ? NSColor.white.withAlphaComponent(0.15).cgColor
+            : NSColor(hexRGB: 0xFF5D5D).withAlphaComponent(0.12).cgColor // OFF: 薄い赤で消灯
+        track.cornerRadius = 2
+        layer?.addSublayer(track)
+
+        if enabled {
+            fill.frame = NSRect(x: barX, y: bounds.height / 2 - 2, width: 0, height: 4)
+            fill.backgroundColor = NSColor(hexRGB: 0x2BD9A9).cgColor
+            fill.cornerRadius = 2
+            layer?.addSublayer(fill)
+        }
+
+        toolTip = enabled ? "録音中" : "録音していません (ホームでON/OFF)"
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    /// RMS (0〜1) を対数スケールでバー表示。立ち上がりは即時、下がりは滑らかに
+    func setRMS(_ rms: Float) {
+        guard enabled else { return }
+        let db = 20 * log10(max(rms, 1e-5))
+        let target = max(0, min(1, (db + 50) / 50)) // -50dB〜0dB を 0〜1 に
+        displayLevel = max(target, displayLevel * 0.7)
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(0.08)
+        fill.frame.size.width = barWidth * CGFloat(displayLevel)
+        CATransaction.commit()
     }
 }
 

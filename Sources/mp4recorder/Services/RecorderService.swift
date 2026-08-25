@@ -15,6 +15,8 @@ struct RecordConfig {
     var saveDirectory: String?
     var fileName: String?
     var maxMinutes: Int = 30
+    var captureSystemAudio: Bool = false // macの出力音声
+    var captureMicrophone: Bool = false // マイク音声
 
     static func from(_ dict: [String: Any]) -> RecordConfig {
         var c = RecordConfig()
@@ -42,6 +44,8 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
     private var stream: SCStream?
     private var writer: AVAssetWriter?
     private var input: AVAssetWriterInput?
+    private var systemAudioInput: AVAssetWriterInput?
+    private var micInput: AVAssetWriterInput?
     private var sessionStarted = false
     private var tempURL: URL?
     private var config: RecordConfig?
@@ -51,6 +55,44 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
     var isRecording: Bool { stream != nil }
     /// ディスプレイ構成変更などでストリームが死んだ時の通知
     var onStreamError: ((String) -> Void)?
+
+    // 停止バーのレベルメーター用 (sampleQueue上で更新)
+    private var levelSystem: Float = 0
+    private var levelMic: Float = 0
+
+    /// 現在の音声入力レベル (RMS)。nil = そのソースは録音していない
+    func readLevels() -> (system: Float?, mic: Float?) {
+        sampleQueue.sync {
+            (systemAudioInput != nil ? levelSystem : nil,
+             micInput != nil ? levelMic : nil)
+        }
+    }
+
+    /// メーター表示用の軽量RMS (1/8サンプリング)
+    private static func rmsLevel(of sb: CMSampleBuffer) -> Float {
+        guard let block = CMSampleBufferGetDataBuffer(sb) else { return 0 }
+        var lengthAtOffset = 0
+        var totalLength = 0
+        var ptr: UnsafeMutablePointer<Int8>?
+        CMBlockBufferGetDataPointer(
+            block, atOffset: 0, lengthAtOffsetOut: &lengthAtOffset,
+            totalLengthOut: &totalLength, dataPointerOut: &ptr
+        )
+        guard let ptr else { return 0 }
+        let count = min(lengthAtOffset, totalLength) / MemoryLayout<Float>.size
+        guard count > 0 else { return 0 }
+        let floats = UnsafeRawPointer(ptr).bindMemory(to: Float.self, capacity: count)
+        var sum: Float = 0
+        var n = 0
+        var i = 0
+        while i < count {
+            let v = floats[i]
+            sum += v * v
+            n += 1
+            i += 8
+        }
+        return n > 0 ? (sum / Float(n)).squareRoot() : 0
+    }
 
     /// excludingWindowNumbers: 停止バー等、録画に写したくない自アプリのウィンドウ
     func start(config: RecordConfig, excludingWindowNumbers: [Int]) async throws {
@@ -80,6 +122,16 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
         if let region = config.region {
             scConfig.sourceRect = region // 論理座標・ディスプレイローカル・左上原点
         }
+        // 音声 (システム音声 / マイク)。自アプリの再生音は除外
+        if config.captureSystemAudio {
+            scConfig.capturesAudio = true
+            scConfig.excludesCurrentProcessAudio = true
+            scConfig.sampleRate = 48_000
+            scConfig.channelCount = 2
+        }
+        if config.captureMicrophone {
+            scConfig.captureMicrophone = true // 初回はマイク権限のプロンプトが出る
+        }
 
         // AVAssetWriter (mp4 / H.264 High Profile)
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("mp4recorder", isDirectory: true)
@@ -105,17 +157,52 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
         input.expectsMediaDataInRealTime = true
         writer.add(input)
+
+        // 音声トラック (AAC)。両方ONの場合は2トラックになる (ミックスは将来課題 → open-questions #11)
+        var systemAudioInput: AVAssetWriterInput?
+        if config.captureSystemAudio {
+            let a = AVAssetWriterInput(mediaType: .audio, outputSettings: [
+                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVSampleRateKey: 48_000,
+                AVNumberOfChannelsKey: 2,
+                AVEncoderBitRateKey: 160_000,
+            ])
+            a.expectsMediaDataInRealTime = true
+            writer.add(a)
+            systemAudioInput = a
+        }
+        var micInput: AVAssetWriterInput?
+        if config.captureMicrophone {
+            let a = AVAssetWriterInput(mediaType: .audio, outputSettings: [
+                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVSampleRateKey: 48_000,
+                AVNumberOfChannelsKey: 1, // 音声メモ用途なのでモノラルで十分
+                AVEncoderBitRateKey: 96_000,
+            ])
+            a.expectsMediaDataInRealTime = true
+            writer.add(a)
+            micInput = a
+        }
+
         guard writer.startWriting() else {
             throw writer.error ?? RecorderError.writerFailed
         }
 
         let stream = SCStream(filter: filter, configuration: scConfig, delegate: self)
         try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: sampleQueue)
+        if config.captureSystemAudio {
+            try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: sampleQueue)
+        }
+        if config.captureMicrophone {
+            try stream.addStreamOutput(self, type: .microphone, sampleHandlerQueue: sampleQueue)
+        }
         try await stream.startCapture()
 
         self.stream = stream
         self.writer = writer
         self.input = input
+        self.systemAudioInput = systemAudioInput
+        self.micInput = micInput
         self.tempURL = url
         self.sessionStarted = false
 
@@ -131,6 +218,7 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
     /// 停止してmp4を確定。戻り値は一時ファイルパス。
     func stop() async throws -> String {
         guard let stream, let writer, let input, let tempURL else { throw RecorderError.notRecording }
+        let hadBothAudio = (config?.captureSystemAudio ?? false) && (config?.captureMicrophone ?? false)
         DispatchQueue.main.async { [weak self] in
             self?.autoStopTimer?.invalidate()
             self?.autoStopTimer = nil
@@ -138,14 +226,18 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
         try? await stream.stopCapture()
         self.stream = nil
 
+        let audioInputs = [systemAudioInput, micInput].compactMap { $0 }
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             sampleQueue.async {
                 input.markAsFinished()
+                audioInputs.forEach { $0.markAsFinished() }
                 writer.finishWriting { cont.resume() }
             }
         }
         self.writer = nil
         self.input = nil
+        self.systemAudioInput = nil
+        self.micInput = nil
         self.config = nil
         self.tempURL = nil
         self.sessionStarted = false
@@ -153,25 +245,45 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
             try? FileManager.default.removeItem(at: tempURL)
             throw writer.error ?? RecorderError.writerFailed
         }
+        // システム音声+マイク両方ONの場合は1トラックにミックス
+        // (2トラックのままだとブラウザ等で片方しか再生されない)
+        if hadBothAudio {
+            return try await AudioMixdown.mixIfNeeded(path: tempURL.path)
+        }
         return tempURL.path
     }
 
     // MARK: - SCStreamOutput
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard type == .screen, sampleBuffer.isValid,
-              let writer, let input else { return }
-        // 完全フレームのみ書く (idle/blankフレームを除外)
-        guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
-              let statusRaw = attachments.first?[.status] as? Int,
-              statusRaw == SCFrameStatus.complete.rawValue else { return }
-
-        if !sessionStarted {
-            writer.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
-            sessionStarted = true
-        }
-        if input.isReadyForMoreMediaData {
-            input.append(sampleBuffer)
+        guard sampleBuffer.isValid, let writer else { return }
+        switch type {
+        case .screen:
+            guard let input else { return }
+            // 完全フレームのみ書く (idle/blankフレームを除外)
+            guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
+                  let statusRaw = attachments.first?[.status] as? Int,
+                  statusRaw == SCFrameStatus.complete.rawValue else { return }
+            if !sessionStarted {
+                writer.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
+                sessionStarted = true
+            }
+            if input.isReadyForMoreMediaData {
+                input.append(sampleBuffer)
+            }
+        case .audio:
+            levelSystem = Self.rmsLevel(of: sampleBuffer)
+            // セッション開始 (最初のビデオフレーム) 前の音声は捨てる
+            guard sessionStarted, let audioInput = systemAudioInput,
+                  audioInput.isReadyForMoreMediaData else { return }
+            audioInput.append(sampleBuffer)
+        case .microphone:
+            levelMic = Self.rmsLevel(of: sampleBuffer)
+            guard sessionStarted, let audioInput = micInput,
+                  audioInput.isReadyForMoreMediaData else { return }
+            audioInput.append(sampleBuffer)
+        @unknown default:
+            break
         }
     }
 

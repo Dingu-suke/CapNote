@@ -16,6 +16,7 @@ final class AppState: ObservableObject {
     @Published var displays: [DisplayItem] = DisplayItem.current()
     @Published var screenRecordingGranted = true
     @Published var accessibilityGranted = true
+    @Published var microphoneGranted = true
     @Published var settings = AppSettings.load() {
         didSet {
             settings.save()
@@ -86,6 +87,7 @@ final class AppState: ObservableObject {
         let p = PermissionService.check()
         screenRecordingGranted = p["screenRecording"] ?? false
         accessibilityGranted = p["accessibility"] ?? false
+        microphoneGranted = p["microphone"] ?? false
         if promptIfNeeded && !screenRecordingGranted {
             // 初回プロンプト。付与するとmacOSがアプリを終了させるので再起動が必要
             screenRecordingGranted = PermissionService.requestScreenRecording()
@@ -114,6 +116,8 @@ final class AppState: ObservableObject {
             config.saveDirectory = s.movieDirectory
             config.fileName = "rec_\(timestampNow()).mp4"
             config.maxMinutes = s.maxMinutes
+            config.captureSystemAudio = s.captureSystemAudio
+            config.captureMicrophone = s.captureMicrophone
 
             // 範囲選択 (切り取り)
             var screen: NSScreen
@@ -147,7 +151,14 @@ final class AppState: ObservableObject {
             self.countdown.run(on: screen) {
                 Task { @MainActor in
                     do {
-                        self.stopBar.show(on: screen)
+                        self.stopBar.show(
+                            on: screen,
+                            systemAudio: config.captureSystemAudio,
+                            mic: config.captureMicrophone,
+                            levels: { [weak self] in
+                                self?.recorder.readLevels() ?? (nil, nil)
+                            }
+                        )
                         self.statusBar.showRecording()
                         var excluded: [Int] = []
                         if let n = self.stopBar.windowNumber { excluded.append(n) }

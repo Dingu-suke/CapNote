@@ -1,13 +1,14 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
     name: "mp4recorder",
-    platforms: [.macOS(.v14)], // SCScreenshotManager が macOS 14+
+    platforms: [.macOS(.v15)], // SCKのマイク取得 (captureMicrophone) が macOS 15+
     targets: [
         .executableTarget(
             name: "mp4recorder",
-            path: "Sources/mp4recorder"
+            path: "Sources/mp4recorder",
+            swiftSettings: [.swiftLanguageMode(.v5)]
         ),
     ]
 )

@@ -98,6 +98,8 @@ struct AppSettings: Codable, Equatable {
     var fps: Int = 10
     var resolution: ResolutionScale = .logical
     var showCursor: Bool = true
+    var captureSystemAudio: Bool = false
+    var captureMicrophone: Bool = false
 
     static let fpsOptions = [5, 10, 15, 24, 30]
     var movieDirectory: String = "~/Movies/mp4recorder"
@@ -119,6 +121,8 @@ struct AppSettings: Codable, Equatable {
         fps = try c.decodeIfPresent(Int.self, forKey: .fps) ?? 10
         resolution = try c.decodeIfPresent(ResolutionScale.self, forKey: .resolution) ?? .logical
         showCursor = try c.decodeIfPresent(Bool.self, forKey: .showCursor) ?? true
+        captureSystemAudio = try c.decodeIfPresent(Bool.self, forKey: .captureSystemAudio) ?? false
+        captureMicrophone = try c.decodeIfPresent(Bool.self, forKey: .captureMicrophone) ?? false
         movieDirectory = try c.decodeIfPresent(String.self, forKey: .movieDirectory) ?? "~/Movies/mp4recorder"
         pictureDirectory = try c.decodeIfPresent(String.self, forKey: .pictureDirectory) ?? "~/Pictures/mp4recorder"
         maxMinutes = try c.decodeIfPresent(Int.self, forKey: .maxMinutes) ?? 30

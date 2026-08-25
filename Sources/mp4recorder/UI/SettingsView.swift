@@ -202,10 +202,21 @@ struct SettingsView: View {
         section("権限") {
             permissionRow(
                 name: "画面収録",
-                desc: "録画・スクショに必須",
+                desc: "録画・スクショ・システム音声の録音に必須",
                 granted: app.screenRecordingGranted,
                 pane: "screenRecording"
             )
+            permissionRow(
+                name: "マイク",
+                desc: "マイク音声の録音に使用 (「マイク」ONの録画に必要)",
+                granted: app.microphoneGranted,
+                pane: "microphone"
+            ) {
+                // 未確認ならその場でプロンプト、拒否済みならシステム設定へ
+                PermissionService.requestOrOpenMicrophone {
+                    app.refreshPermissions()
+                }
+            }
             permissionRow(
                 name: "アクセシビリティ",
                 desc: "クリック波紋の検知に使用 (なくても録画は可能)",
@@ -221,7 +232,10 @@ struct SettingsView: View {
         }
     }
 
-    private func permissionRow(name: String, desc: String, granted: Bool, pane: String) -> some View {
+    private func permissionRow(
+        name: String, desc: String, granted: Bool, pane: String,
+        action: (() -> Void)? = nil
+    ) -> some View {
         HStack(spacing: 10) {
             Image(systemName: granted ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .foregroundStyle(granted ? Brand.tealA : Color(hex: 0xFF7A6B))
@@ -237,7 +251,11 @@ struct SettingsView: View {
             Spacer()
             if !granted {
                 Button("設定を開く") {
-                    PermissionService.openSystemSettings(pane: pane)
+                    if let action {
+                        action()
+                    } else {
+                        PermissionService.openSystemSettings(pane: pane)
+                    }
                 }
                 .buttonStyle(.plain)
                 .font(.system(size: 11.5, weight: .semibold))
