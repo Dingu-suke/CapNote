@@ -170,11 +170,22 @@ struct SettingsView: View {
                 TextField("", text: text)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(size: 12))
-                    .frame(width: 210)
-                Button("選択…") {
+                    .frame(width: 200)
+                Button {
                     chooseDirectory(into: text)
+                } label: {
+                    Image(systemName: "folder")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Brand.text)
+                        .frame(width: 28, height: 22)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Brand.surface)
+                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Brand.border))
+                        )
                 }
-                .buttonStyle(GhostButtonStyle())
+                .buttonStyle(.plain)
+                .fixedSize()
                 .help("フォルダをFinderで選択")
             }
         }
