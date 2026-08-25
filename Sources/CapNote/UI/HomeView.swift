@@ -55,7 +55,7 @@ struct HomeView: View {
                 .fill(Brand.gradient)
                 .frame(width: 26, height: 26)
                 .overlay(Circle().fill(.white).frame(width: 9, height: 9))
-            Text("mp4recorder")
+            Text("CapNote")
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(Brand.textHi)
             Spacer()

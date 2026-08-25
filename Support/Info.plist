@@ -5,17 +5,17 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>ja</string>
 	<key>CFBundleExecutable</key>
-	<string>mp4recorder</string>
+	<string>CapNote</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.dingu.mp4recorder</string>
+	<string>com.dingu.capnote</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>mp4recorder</string>
+	<string>CapNote</string>
 	<key>CFBundleDisplayName</key>
-	<string>mp4recorder</string>
+	<string>CapNote</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

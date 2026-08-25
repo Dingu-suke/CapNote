@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @main
-struct Mp4RecorderApp: App {
+struct CapNoteApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var app = AppState()
 

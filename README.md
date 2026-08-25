@@ -1,6 +1,6 @@
-# mp4recorder
+# CapNote
 
-PR証跡用の macOS 録画 + スクショアプリ。**Swift / SwiftUI 製ネイティブアプリ** (アプリ本体 約3MB)。
+PR証跡用の macOS 録画 + スクショアプリ (旧名 mp4recorder)。**Swift / SwiftUI 製ネイティブアプリ** (アプリ本体 約3MB)。
 
 - 📹 軽量mp4録画 (カーソル表示・クリック波紋つき) — GitHub PRにそのまま添付できるサイズを目指す
 - 🔊 システム音声 / 🎙 マイク音声も録音可 (それぞれトグルで切替)
@@ -24,10 +24,10 @@ PR証跡用の macOS 録画 + スクショアプリ。**Swift / SwiftUI 製ネ�
 
 ## インストール (ビルド不要・dmgから)
 
-1. **[最新の dmg をダウンロード](https://github.com/Dingu-suke/mp4recorder/releases/latest)** (`mp4recorder.dmg`)
-2. dmg を開いて `mp4recorder.app` を `Applications` フォルダにドラッグ
+1. **[最新の dmg をダウンロード](https://github.com/Dingu-suke/CapNote/releases/latest)** (`CapNote.dmg`)
+2. dmg を開いて `CapNote.app` を `Applications` フォルダにドラッグ
 3. 初回は Gatekeeper に止められるので、アプリを **右クリック → 開く** → 「開く」
-   (または `xattr -cr /Applications/mp4recorder.app`)
+   (または `xattr -cr /Applications/CapNote.app`)
 4. 起動すると **画面収録の権限** を求められる。システム設定で許可 →
    **macOS がアプリを一度終了させる (OSの仕様)** ので、もう一度起動する
 5. (任意) クリック波紋を使う場合はアクセシビリティ権限も許可
@@ -64,7 +64,7 @@ make clean
 3. 録画中はクリック位置に波紋が写り込む。停止は画面下の停止バー or メニューバーの■アイコン
    - ホームの「システム音声」「マイク」トグルで音声も録音できる (マイクは初回に権限プロンプト)
    - 両方ONの場合は停止時に自動で1トラックにミックスされる (どのプレイヤーでも両方聞こえる)
-4. 停止すると出力先に従って mp4 をコピー / 保存 (`~/Movies/mp4recorder/rec_日時.mp4`)
+4. 停止すると出力先に従って mp4 をコピー / 保存 (`~/Movies/CapNote/rec_日時.mp4`)
 
 既定は 10fps・論理解像度・約1Mbps。1080p・30秒で 2〜4MB 程度になり、
 GitHub PR にそのままドラッグ&ドロップ / Cmd+V で添付できる (添付上限100MB)。
@@ -76,19 +76,19 @@ GitHub PR にそのままドラッグ&ドロップ / Cmd+V で添付できる (�
 2. 注釈エディタで 矩形 / 楕円 / 直線 / 矢印 / フリーハンド / テキスト / 番号バッジ / ぼかし を描く
    - Undo/Redo: Cmd+Z / Cmd+Shift+Z。選択ツールで移動・Delete削除、テキストはダブルクリックで再編集
    - トリミングは下部のボタンから
-3. 「コピー」(PNGをクリップボードへ) or 「保存」(`~/Pictures/mp4recorder/shot_日時.png`)
+3. 「コピー」(PNGをクリップボードへ) or 「保存」(`~/Pictures/CapNote/shot_日時.png`)
 
 ## 配布 (dmg)
 
 ```sh
-make dmg    # → dist/mp4recorder.dmg
+make dmg    # → dist/CapNote.dmg
 ```
 
 現状は **ad-hoc署名 (Apple Developer 証明書なし)** なので、配布先の Mac では初回に Gatekeeper に止められる。
 受け取った人は次のどちらかで開ける:
 
 - アプリを **右クリック → 開く** (「開発元を確認できません」→ 開く)
-- またはターミナルで `xattr -cr /Applications/mp4recorder.app`
+- またはターミナルで `xattr -cr /Applications/CapNote.app`
 
 警告なしで配りたくなったら Apple Developer Program (年99ドル) に加入して
 Developer ID 署名 + notarization が必要 (→ docs/open-questions.md #4)。
@@ -97,7 +97,7 @@ Developer ID 署名 + notarization が必要 (→ docs/open-questions.md #4)。
 
 ```sh
 make dmg
-gh release create v1.x.x dist/mp4recorder.dmg --title "v1.x.x" --notes "変更点"
+gh release create v1.x.x dist/CapNote.dmg --title "v1.x.x" --notes "変更点"
 ```
 
 これで README 冒頭の「最新の dmg をダウンロード」リンク (releases/latest) が新しい dmg を指す。

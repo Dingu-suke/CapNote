@@ -86,7 +86,7 @@ final class ScreenshotService {
     }
 
     static func writePNG(_ image: CGImage, prefix: String) -> String? {
-        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("mp4recorder", isDirectory: true)
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("CapNote", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let url = dir.appendingPathComponent("\(prefix)_\(RecorderService.timestamp()).png")
         guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {

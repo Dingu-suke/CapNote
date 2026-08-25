@@ -1,10 +1,10 @@
 .PHONY: build run install dmg clean help
 
-APP_NAME := mp4recorder
+APP_NAME := CapNote
 BUILD_DIR := .build/release
 APP := build/$(APP_NAME).app
 
-build: ## リリースビルドして build/mp4recorder.app を作る
+build: ## リリースビルドして build/$(APP_NAME).app を作る
 	swift build -c release
 	rm -rf $(APP)
 	mkdir -p $(APP)/Contents/MacOS $(APP)/Contents/Resources

@@ -50,7 +50,7 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
     private var tempURL: URL?
     private var config: RecordConfig?
     private var autoStopTimer: Timer?
-    private let sampleQueue = DispatchQueue(label: "mp4recorder.samples")
+    private let sampleQueue = DispatchQueue(label: "capnote.samples")
 
     var isRecording: Bool { stream != nil }
     /// ディスプレイ構成変更などでストリームが死んだ時の通知
@@ -134,7 +134,7 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
         }
 
         // AVAssetWriter (mp4 / H.264 High Profile)
-        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("mp4recorder", isDirectory: true)
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("CapNote", isDirectory: true)
         try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
         let url = tempDir.appendingPathComponent("rec_\(Self.timestamp()).mp4")
         try? FileManager.default.removeItem(at: url)

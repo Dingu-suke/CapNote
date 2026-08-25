@@ -51,10 +51,12 @@
 - 候補: 録画 `Cmd+Shift+6`、スクショ `Cmd+Shift+7` (OS標準の4/5と衝突しない)
 - 未決: 設定でカスタマイズ可能にするか (推奨だが後回し可)
 
-## 10. アプリ名
+## 10. 【解決済み】アプリ名 → **CapNote** (2026-08-25)
 
-- 現リポジトリ名は `mp4recorder`。スクショ機能も持つので改名するか未決
-- 候補があれば設定 (Bundle ID にも影響するので M0 のうちに決めるのが楽)
+- キャプチャ (Cap) + 注釈 (Note)。言いやすさで採用
+- Bundle ID は `com.dingu.capnote`。**改名により画面収録・マイク等の権限は再許可が必要**
+- 保存先の既定も `~/Movies/CapNote` / `~/Pictures/CapNote` に変更 (設定はBundle ID変更でリセットされるため新既定が適用される)
+- ディレクトリ名 `/Users/dingu/Projects/Applications/mp4recorder` はユーザーが任意でリネーム
 
 ## 11. 【解決済み】音声2トラックのミックス
 

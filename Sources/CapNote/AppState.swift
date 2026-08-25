@@ -199,7 +199,7 @@ final class AppState: ObservableObject {
                     target: OutputTarget(rawValue: config?.outputTarget ?? "clipboard") ?? .clipboard,
                     directory: config?.saveDirectory,
                     fileName: config?.fileName,
-                    defaultSubdir: "Movies/mp4recorder"
+                    defaultSubdir: "Movies/CapNote"
                 )
                 self.recPhase = .idle
                 self.restoreMainWindow()
@@ -241,7 +241,7 @@ final class AppState: ObservableObject {
                         target: self.settings.outputTarget,
                         directory: self.settings.pictureDirectory,
                         fileName: "shot_\(timestampNow()).png",
-                        defaultSubdir: "Pictures/mp4recorder",
+                        defaultSubdir: "Pictures/CapNote",
                         asImage: true
                     )
                     self.showToast(Toast(
@@ -271,7 +271,7 @@ final class AppState: ObservableObject {
                 target: target,
                 directory: settings.pictureDirectory,
                 fileName: "shot_\(timestampNow()).png",
-                defaultSubdir: "Pictures/mp4recorder",
+                defaultSubdir: "Pictures/CapNote",
                 asImage: true
             )
             route = .home

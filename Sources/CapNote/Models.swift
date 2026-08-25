@@ -102,8 +102,8 @@ struct AppSettings: Codable, Equatable {
     var captureMicrophone: Bool = false
 
     static let fpsOptions = [5, 10, 15, 24, 30]
-    var movieDirectory: String = "~/Movies/mp4recorder"
-    var pictureDirectory: String = "~/Pictures/mp4recorder"
+    var movieDirectory: String = "~/Movies/CapNote"
+    var pictureDirectory: String = "~/Pictures/CapNote"
     var maxMinutes: Int = 30
     var ripple = RippleUserSettings()
     var appearance: Appearance = .dark // 既定はダーク (現状の見た目)
@@ -123,8 +123,8 @@ struct AppSettings: Codable, Equatable {
         showCursor = try c.decodeIfPresent(Bool.self, forKey: .showCursor) ?? true
         captureSystemAudio = try c.decodeIfPresent(Bool.self, forKey: .captureSystemAudio) ?? false
         captureMicrophone = try c.decodeIfPresent(Bool.self, forKey: .captureMicrophone) ?? false
-        movieDirectory = try c.decodeIfPresent(String.self, forKey: .movieDirectory) ?? "~/Movies/mp4recorder"
-        pictureDirectory = try c.decodeIfPresent(String.self, forKey: .pictureDirectory) ?? "~/Pictures/mp4recorder"
+        movieDirectory = try c.decodeIfPresent(String.self, forKey: .movieDirectory) ?? "~/Movies/CapNote"
+        pictureDirectory = try c.decodeIfPresent(String.self, forKey: .pictureDirectory) ?? "~/Pictures/CapNote"
         maxMinutes = try c.decodeIfPresent(Int.self, forKey: .maxMinutes) ?? 30
         ripple = try c.decodeIfPresent(RippleUserSettings.self, forKey: .ripple) ?? RippleUserSettings()
         appearance = try c.decodeIfPresent(Appearance.self, forKey: .appearance) ?? .dark

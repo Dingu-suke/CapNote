@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "mp4recorder",
+    name: "CapNote",
     platforms: [.macOS(.v15)], // SCKのマイク取得 (captureMicrophone) が macOS 15+
     targets: [
         .executableTarget(
-            name: "mp4recorder",
-            path: "Sources/mp4recorder",
+            name: "CapNote",
+            path: "Sources/CapNote",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
     ]
