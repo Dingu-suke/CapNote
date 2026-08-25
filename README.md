@@ -16,11 +16,11 @@ macOS用の 録画 + スクリーンショットアプリ。画面を録画し�
 
 |  |  |  |
 | --- | --- | --- | 
-| 1. アプリアイコンをクリック | ![image](https://i.gyazo.com/ecd8984a497d393e8a4efbc791f36b05.png) |  |
-| 2. モーダルウィンドウが表示されますので、完了を押す | ![image](https://i.gyazo.com/483d4dce881a45f97db8e4b256c92870.png) |  |
-| 3. 設定 → プライバシーとセキュリティ → このまま開く | ![image](https://i.gyazo.com/98b2a380c73e5a96e6d88253cc22afa9.png) |  |
-| 4. このまま開く | ![image](https://i.gyazo.com/0526d5751e572db1391094449f30886f.png) |  |
-| 5. アプリケーションを開き、右上の ≡ から設定を開く → 権限を追加する | ![image](https://i.gyazo.com/77c40ade286c0e15e6a867bea1e4ba63.png) |  |
+| 3. アプリアイコンをクリック | ![image](https://i.gyazo.com/ecd8984a497d393e8a4efbc791f36b05.png) |  |
+| 4. モーダルウィンドウが表示されますので、完了を押す | ![image](https://i.gyazo.com/483d4dce881a45f97db8e4b256c92870.png) |  |
+| 5. 設定 → プライバシーとセキュリティ → このまま開く | ![image](https://i.gyazo.com/98b2a380c73e5a96e6d88253cc22afa9.png) |  |
+| 6. このまま開く | ![image](https://i.gyazo.com/0526d5751e572db1391094449f30886f.png) |  |
+| 7. アプリケーションを開き、右上の ≡ から設定を開く → 権限を追加する | ![image](https://i.gyazo.com/77c40ade286c0e15e6a867bea1e4ba63.png) |  |
 
 対応OS: **macOS 15 以降**
 
