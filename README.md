@@ -22,6 +22,19 @@ macOS用の 録画 + スクリーンショットアプリ。画面を録画し�
 
 対応OS: **macOS 15 以降**
 
+
+|  |  |  |
+| --- | --- | --- | 
+| 1. アプリアイコンをクリック | ![image](https://i.gyazo.com/ecd8984a497d393e8a4efbc791f36b05.png) |  |
+| 2. モーダルウィンドウが表示されますので、完了を押す | ![image](https://i.gyazo.com/483d4dce881a45f97db8e4b256c92870.png) |  |
+| 3. 設定 → プライバシーとセキュリティ → このまま開く | ![image](https://i.gyazo.com/98b2a380c73e5a96e6d88253cc22afa9.png) |  |
+| 4. このまま開く | ![image](https://i.gyazo.com/0526d5751e572db1391094449f30886f.png) |  |
+| 5. アプリケーションを開き、右上の ≡ から設定を開く → 権限を追加する | ![image](https://i.gyazo.com/77c40ade286c0e15e6a867bea1e4ba63.png) |  |
+
+
+<br/>
+<br/>
+
 ## 使い方
 
 ### 録画する
@@ -77,19 +90,7 @@ dmg のファイル名は **`CapNote.dmg` 固定**にすること。README の�
 
 - dmg は **ad-hoc署名** (Apple Developer 証明書なし)。そのため初回に「右クリック → 開く」が必要
 - 警告なしで配るには Apple Developer Program (年99ドル) + Developer ID 署名 + notarization が必要 (→ docs/open-questions.md #4)
-- dmg は GitHub Releases に置くため、リポジトリ本体は太らない。**dmg専用の別リポジトリは不要**
 
-### ドキュメント
+### ライセンス
 
-| ファイル | 内容 |
-|---------|------|
-| [docs/requirements.md](docs/requirements.md) | 要件定義 |
-| [docs/design/design.md](docs/design/design.md) | アーキテクチャ設計 |
-| [docs/dev-process.md](docs/dev-process.md) | 開発の進め方 (計画md → 実装 → 検証) |
-| [docs/plans/](docs/plans/) | 実装計画の記録 |
-| [docs/features/](docs/features/) | 機能別詳細仕様 |
-| [docs/open-questions.md](docs/open-questions.md) | 意思決定の記録・未決事項 |
-
-### 補足
-
-- 旧名 mp4recorder。当初 Flutter + Swift ハイブリッド → SwiftUI に全面書き換え (履歴は git 参照)
+MIT
