@@ -1,43 +1,59 @@
 # CapNote
 
-PR証跡用の macOS 録画 + スクショアプリ (旧名 mp4recorder)。**Swift / SwiftUI 製ネイティブアプリ** (アプリ本体 約3MB)。
+macOS用の 録画 + スクリーンショットアプリ。画面を録画して軽い mp4 にしたり、スクショに矢印や文字を書き込んだりして、そのまま GitHub や Slack に貼れます。
 
-- 📹 軽量mp4録画 (カーソル表示・クリック波紋つき) — GitHub PRにそのまま添付できるサイズを目指す
-- 🔊 システム音声 / 🎙 マイク音声も録音可 (それぞれトグルで切替)
-- ✂️ 切り取りスクショ + 注釈 (矢印・テキスト・ぼかし等、Awesome Screenshot風)
-- 📋 クリップボードコピー / 💾 ファイル保存 を選択可
-- 🖥 マルチモニター対応
+[![Download](https://img.shields.io/badge/%E2%AC%87%EF%B8%8E%20%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89-CapNote.dmg-19BE9C?style=for-the-badge&labelColor=141D1B)](https://github.com/Dingu-suke/CapNote/releases/latest/download/CapNote.dmg)
 
-技術: SwiftUI (UI) + ScreenCaptureKit / AVAssetWriter (キャプチャ・エンコード)。Xcodeプロジェクトなし、SwiftPM + Makefile だけでビルドできる。
+- 📹 **録画** — 範囲を切り取って録画。軽い mp4 になるので GitHub PR にそのまま貼れる。クリックした場所に波紋が表示される
+- 🔊 **音声** — Mac の音・マイクの声も録音できる (ON/OFF切替)
+- ✂️ **スクショ + 注釈** — 範囲を切り取って、矢印・文字・ぼかし・番号などを書き込める
+- 📋 出力は **クリップボードにコピー** か **ファイル保存** を選べる
 
-## ドキュメント
+## インストール (3分)
 
-| ファイル | 内容 |
-|---------|------|
-| [docs/requirements.md](docs/requirements.md) | 要件定義 |
-| [docs/design/design.md](docs/design/design.md) | アーキテクチャ設計 |
-| [docs/design/design-ui.md](docs/design/design-ui.md) | 画面設計 |
-| [docs/design/data-model.md](docs/design/data-model.md) | データモデル |
-| [docs/features/](docs/features/) | 機能別詳細仕様 (録画 / 波紋 / スクショ注釈) |
-| [docs/tasks.md](docs/tasks.md) | タスク一覧 |
-| [docs/open-questions.md](docs/open-questions.md) | 未確定事項・考慮事項 |
+1. 上の **「⬇︎ ダウンロード CapNote.dmg」ボタン**を押す
+2. ダウンロードした `CapNote.dmg` をダブルクリックで開き、中の **CapNote を Applications フォルダにドラッグ**する
+3. アプリケーションフォルダの CapNote を **右クリック → 「開く」→「開く」** で起動する
+   - ⚠️ 普通にダブルクリックすると「開発元を確認できません」と出て開けません。**初回だけ右クリックから**開いてください (2回目以降は普通に開けます)
+4. 起動すると「画面収録」の許可を求められるので、システム設定で **CapNote をオン**にする
+   - ⚠️ オンにすると **macOS がアプリを自動で終了させます (Macの仕様です)**。もう一度 CapNote を起動してください
+5. これで使えます 🎉
+   - マイクの声を録音したい場合は、初回に出るマイクの許可も「OK」してください
 
-## インストール (ビルド不要・dmgから)
+対応OS: **macOS 15 以降**
 
-1. **[最新の dmg をダウンロード](https://github.com/Dingu-suke/CapNote/releases/latest)** (`CapNote.dmg`)
-2. dmg を開いて `CapNote.app` を `Applications` フォルダにドラッグ
-3. 初回は Gatekeeper に止められるので、アプリを **右クリック → 開く** → 「開く」
-   (または `xattr -cr /Applications/CapNote.app`)
-4. 起動すると **画面収録の権限** を求められる。システム設定で許可 →
-   **macOS がアプリを一度終了させる (OSの仕様)** ので、もう一度起動する
-5. (任意) クリック波紋を使う場合はアクセシビリティ権限も許可
+## 使い方
 
-> dmg は Apple Developer 証明書なしの ad-hoc 署名のため手順3が必要。
-> 署名済み配布にするには Apple Developer Program (年99ドル) + notarization が要る。
+### 録画する
 
-## ビルド・起動 (ソースから)
+1. 「録画」ボタン → マウスをドラッグして録画したい範囲を選ぶ
+2. 3秒カウントダウンのあと録画開始。クリックした場所には波紋が付きます
+3. 画面下の「■ 停止」で終了。クリップボード設定なら **そのまま Cmd+V で GitHub や Slack に貼れます**
 
-前提: macOS 15 以降 / Xcode (ビルドツールとして。App Storeから) + Command Line Tools。
+- 音を入れたいときはホームの「システム音声」「マイク」をONにする (録画中は停止バーのメーターで音が入っているか確認できる)
+- ショートカット: **⌘⇧6 で録画の開始/停止** (設定で変更可)
+
+### スクショを撮る
+
+1. 「スクショ」ボタン → ドラッグで範囲を選ぶ
+2. エディタが開くので、矢印・文字・ぼかし・番号バッジなどを書き込む
+3. 「コピー」または「保存」で完了。**Shift を押しながら範囲確定すると、エディタを飛ばして即コピー**もできます
+
+- ショートカット: **⌘⇧7 でスクショ** (設定で変更可)
+
+### 設定 (右上のスライダーアイコン)
+
+- テーマ (ダーク / ライト / Macに追従)
+- 画質: fps と解像度を個別に選択。組み合わせごとのファイルサイズ目安も表示
+- 波紋のスタイル・色・サイズ (プレビュー付き)
+- ショートカットキーの変更
+- 保存先フォルダ (📁ボタンで選択)
+
+---
+
+## 開発者向け
+
+技術: Swift / SwiftUI + ScreenCaptureKit / AVAssetWriter。Xcodeプロジェクトなし、SwiftPM + Makefile のみ (アプリ本体 約3MB)。
 
 ```sh
 make run       # ビルドして起動
@@ -46,64 +62,34 @@ make dmg       # 配布用 dmg を dist/ に作成
 make clean
 ```
 
-初回起動時に **画面収録の権限** を求められます。
-**許可すると macOS がアプリを一度終了させる (OSの仕様) ので、再起動してください。**
-波紋用のアクセシビリティ権限は任意です (なくても録画はできます)。
-
-## 使い方
-
-### ショートカット・テーマ
-
-- グローバルショートカット (既定): **録画 開始/停止 ⌘⇧6 / スクショ ⌘⇧7**。設定でキー変更・無効化可
-- テーマ: ダーク (既定) / ライト / Macの設定に追従 を設定で切替
-
-### 録画 (mp4)
-
-1. ホームで出力先 (クリップボード / ファイル) と録画範囲を選ぶ。**既定は「切り取り」(ドラッグで範囲指定)**
-2. 「録画」→ (切り取りならドラッグ) → 3秒カウントダウン → 録画開始
-3. 録画中はクリック位置に波紋が写り込む。停止は画面下の停止バー or メニューバーの■アイコン
-   - ホームの「システム音声」「マイク」トグルで音声も録音できる (マイクは初回に権限プロンプト)
-   - 両方ONの場合は停止時に自動で1トラックにミックスされる (どのプレイヤーでも両方聞こえる)
-4. 停止すると出力先に従って mp4 をコピー / 保存 (`~/Movies/CapNote/rec_日時.mp4`)
-
-既定は 10fps・論理解像度・約1Mbps。1080p・30秒で 2〜4MB 程度になり、
-GitHub PR にそのままドラッグ&ドロップ / Cmd+V で添付できる (添付上限100MB)。
-**fps (5〜30) と解像度 (論理 / Retina 2x) は設定画面で個別に選択**でき、組み合わせごとの容量目安も表示される。
-
-### スクショ + 注釈
-
-1. 「スクショ」→ 画面がフリーズし、ドラッグで切り取り (Esc でキャンセル、**Shift+確定でエディタを飛ばして即出力**)
-2. 注釈エディタで 矩形 / 楕円 / 直線 / 矢印 / フリーハンド / テキスト / 番号バッジ / ぼかし を描く
-   - Undo/Redo: Cmd+Z / Cmd+Shift+Z。選択ツールで移動・Delete削除、テキストはダブルクリックで再編集
-   - トリミングは下部のボタンから
-3. 「コピー」(PNGをクリップボードへ) or 「保存」(`~/Pictures/CapNote/shot_日時.png`)
-
-## 配布 (dmg)
-
-```sh
-make dmg    # → dist/CapNote.dmg
-```
-
-現状は **ad-hoc署名 (Apple Developer 証明書なし)** なので、配布先の Mac では初回に Gatekeeper に止められる。
-受け取った人は次のどちらかで開ける:
-
-- アプリを **右クリック → 開く** (「開発元を確認できません」→ 開く)
-- またはターミナルで `xattr -cr /Applications/CapNote.app`
-
-警告なしで配りたくなったら Apple Developer Program (年99ドル) に加入して
-Developer ID 署名 + notarization が必要 (→ docs/open-questions.md #4)。
-
-### リリース手順 (メンテナ向け)
+### リリース手順
 
 ```sh
 make dmg
 gh release create v1.x.x dist/CapNote.dmg --title "v1.x.x" --notes "変更点"
 ```
 
-これで README 冒頭の「最新の dmg をダウンロード」リンク (releases/latest) が新しい dmg を指す。
+dmg のファイル名は **`CapNote.dmg` 固定**にすること。README のダウンロードボタンは
+`releases/latest/download/CapNote.dmg` (最新リリースの同名アセットへの直リンク) を指しているため、
+リリースを作るだけでボタンの先が自動的に最新になる。
 
-## 補足
+### 配布形態について
 
-- 当初 Flutter + Swift のハイブリッドで実装したが、コア機能がすべて Swift 側になり
-  Flutter の利点がなかったため **SwiftUI に全面書き換えた** (履歴は git 参照)。
-  アプリサイズが約50MB→約3MBになり、起動も速くなった
+- dmg は **ad-hoc署名** (Apple Developer 証明書なし)。そのため初回に「右クリック → 開く」が必要
+- 警告なしで配るには Apple Developer Program (年99ドル) + Developer ID 署名 + notarization が必要 (→ docs/open-questions.md #4)
+- dmg は GitHub Releases に置くため、リポジトリ本体は太らない。**dmg専用の別リポジトリは不要**
+
+### ドキュメント
+
+| ファイル | 内容 |
+|---------|------|
+| [docs/requirements.md](docs/requirements.md) | 要件定義 |
+| [docs/design/design.md](docs/design/design.md) | アーキテクチャ設計 |
+| [docs/dev-process.md](docs/dev-process.md) | 開発の進め方 (計画md → 実装 → 検証) |
+| [docs/plans/](docs/plans/) | 実装計画の記録 |
+| [docs/features/](docs/features/) | 機能別詳細仕様 |
+| [docs/open-questions.md](docs/open-questions.md) | 意思決定の記録・未決事項 |
+
+### 補足
+
+- 旧名 mp4recorder。当初 Flutter + Swift ハイブリッド → SwiftUI に全面書き換え (履歴は git 参照)
