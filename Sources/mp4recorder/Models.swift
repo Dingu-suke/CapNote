@@ -18,38 +18,23 @@ enum ScopeType: String, Codable {
     case region, fullScreen, display
 }
 
-enum QualityPreset: String, Codable, CaseIterable {
-    case light, standard, high
+/// 録画解像度 (fpsとは独立して選択)
+enum ResolutionScale: Double, Codable, CaseIterable {
+    case logical = 1.0 // 論理解像度 (Retinaでも1x。軽い)
+    case retina = 2.0 // 物理解像度 (高精細・サイズ大)
 
     var label: String {
         switch self {
-        case .light: return "軽量"
-        case .standard: return "標準"
-        case .high: return "高画質"
+        case .logical: return "論理解像度 (軽い)"
+        case .retina: return "Retina (2x・高精細)"
         }
     }
 
-    var fps: Int {
+    /// ホーム画面などの短い表示用
+    var shortLabel: String {
         switch self {
-        case .light: return 10
-        case .standard: return 15
-        case .high: return 30
-        }
-    }
-
-    /// 1.0 = 論理解像度, 2.0 = Retina物理解像度
-    var scale: Double {
-        switch self {
-        case .light, .standard: return 1.0
-        case .high: return 2.0
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .light: return "10fps・論理解像度・約1Mbps — 30秒で2〜4MB目安 (推奨)"
-        case .standard: return "15fps・論理解像度・約2Mbps — 30秒で5〜8MB目安"
-        case .high: return "30fps・Retina解像度 — サイズ大。GitHub添付には不向き"
+        case .logical: return "論理解像度"
+        case .retina: return "Retina 2x"
         }
     }
 }
@@ -110,8 +95,11 @@ struct AppSettings: Codable, Equatable {
     var outputTarget: OutputTarget = .clipboard
     var scopeType: ScopeType = .region // 既定は「切り取り (範囲選択)」
     var displayId: Int? = nil
-    var preset: QualityPreset = .light
+    var fps: Int = 10
+    var resolution: ResolutionScale = .logical
     var showCursor: Bool = true
+
+    static let fpsOptions = [5, 10, 15, 24, 30]
     var movieDirectory: String = "~/Movies/mp4recorder"
     var pictureDirectory: String = "~/Pictures/mp4recorder"
     var maxMinutes: Int = 30
@@ -128,7 +116,8 @@ struct AppSettings: Codable, Equatable {
         outputTarget = try c.decodeIfPresent(OutputTarget.self, forKey: .outputTarget) ?? .clipboard
         scopeType = try c.decodeIfPresent(ScopeType.self, forKey: .scopeType) ?? .region
         displayId = try c.decodeIfPresent(Int.self, forKey: .displayId)
-        preset = try c.decodeIfPresent(QualityPreset.self, forKey: .preset) ?? .light
+        fps = try c.decodeIfPresent(Int.self, forKey: .fps) ?? 10
+        resolution = try c.decodeIfPresent(ResolutionScale.self, forKey: .resolution) ?? .logical
         showCursor = try c.decodeIfPresent(Bool.self, forKey: .showCursor) ?? true
         movieDirectory = try c.decodeIfPresent(String.self, forKey: .movieDirectory) ?? "~/Movies/mp4recorder"
         pictureDirectory = try c.decodeIfPresent(String.self, forKey: .pictureDirectory) ?? "~/Pictures/mp4recorder"

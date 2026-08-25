@@ -17,7 +17,7 @@ struct HomeView: View {
                     gradient: Brand.recGradient,
                     accent: Color(hex: 0xFF7A6B),
                     title: recTitle,
-                    subtitle: "軽量mp4・クリック波紋つき",
+                    subtitle: "\(app.settings.fps)fps・\(app.settings.resolution.shortLabel)・mp4",
                     enabled: !app.isBusy
                 ) {
                     app.startRecording()

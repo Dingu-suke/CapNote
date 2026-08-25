@@ -37,30 +37,29 @@ struct SettingsView: View {
 
     private var qualitySection: some View {
         section("録画の画質 (ファイルサイズ優先)") {
-            ForEach(QualityPreset.allCases, id: \.self) { p in
-                Button {
-                    app.settings.preset = p
-                } label: {
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: app.settings.preset == p
-                              ? "largecircle.fill.circle" : "circle")
-                            .foregroundStyle(app.settings.preset == p ? Brand.tealA : Brand.textLo)
-                            .font(.system(size: 13))
-                            .padding(.top, 1)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(p.label)
-                                .font(.system(size: 12.5, weight: .semibold))
-                                .foregroundStyle(Brand.textHi)
-                            Text(p.description)
-                                .font(.system(size: 11))
-                                .foregroundStyle(Brand.textLo)
-                        }
-                        Spacer()
+            row("フレームレート") {
+                Picker("", selection: $app.settings.fps) {
+                    ForEach(AppSettings.fpsOptions, id: \.self) { f in
+                        Text("\(f) fps").tag(f)
                     }
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 120)
             }
+            row("解像度") {
+                Picker("", selection: $app.settings.resolution) {
+                    ForEach(ResolutionScale.allCases, id: \.self) { r in
+                        Text(r.label).tag(r)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 200)
+            }
+            Text(sizeEstimate)
+                .font(.system(size: 11))
+                .foregroundStyle(Brand.textLo)
             Toggle(isOn: $app.settings.showCursor) {
                 Text("マウスカーソルを録画に含める")
                     .font(.system(size: 12.5))
@@ -69,6 +68,18 @@ struct SettingsView: View {
             .toggleStyle(.switch)
             .tint(Brand.teal)
         }
+    }
+
+    /// 現在の設定での容量目安 (メインディスプレイ全画面・自動ビットレート ~0.05bpp 基準)
+    private var sizeEstimate: String {
+        guard let d = app.displays.first(where: { $0.isMain }) ?? app.displays.first else { return "" }
+        let scale = app.settings.resolution.rawValue
+        let w = Double(d.width) * scale
+        let h = Double(d.height) * scale
+        let bitrate = max(300_000, w * h * Double(app.settings.fps) * 0.05)
+        let mb30 = bitrate / 8 * 30 / 1_000_000
+        let mb60 = mb30 * 2
+        return String(format: "目安: 30秒 ≈ %.0f MB / 1分 ≈ %.0f MB (メインディスプレイ全画面。範囲録画ならさらに小さい)", mb30, mb60)
     }
 
     // MARK: - 波紋

@@ -107,8 +107,8 @@ final class AppState: ObservableObject {
         Task { @MainActor in
             var config = RecordConfig()
             let s = settings
-            config.fps = s.preset.fps
-            config.scale = s.preset.scale
+            config.fps = s.fps
+            config.scale = s.resolution.rawValue
             config.showCursor = s.showCursor
             config.outputTarget = s.outputTarget.rawValue
             config.saveDirectory = s.movieDirectory
