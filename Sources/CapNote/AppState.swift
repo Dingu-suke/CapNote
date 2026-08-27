@@ -117,7 +117,7 @@ final class AppState: ObservableObject {
             config.fileName = "rec_\(timestampNow()).mp4"
             config.maxMinutes = s.maxMinutes
             config.captureSystemAudio = s.captureSystemAudio
-            config.captureMicrophone = s.captureMicrophone
+            config.captureMicrophone = s.captureMicrophone && RecorderService.isMicrophoneSupported // macOS 14 は非対応
 
             // 範囲選択 (切り取り)
             var screen: NSScreen

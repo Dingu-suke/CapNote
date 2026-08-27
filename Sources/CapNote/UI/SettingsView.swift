@@ -219,7 +219,9 @@ struct SettingsView: View {
             )
             permissionRow(
                 name: "マイク",
-                desc: "マイク音声の録音に使用 (「マイク」ONの録画に必要)",
+                desc: RecorderService.isMicrophoneSupported
+                    ? "マイク音声の録音に使用 (「マイク」ONの録画に必要)"
+                    : "マイク録音は macOS 15 以降のみ対応 (このOSでは使用しません)",
                 granted: app.microphoneGranted,
                 pane: "microphone"
             ) {

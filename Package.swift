@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CapNote",
-    platforms: [.macOS(.v15)], // SCKのマイク取得 (captureMicrophone) が macOS 15+
+    platforms: [.macOS(.v14)], // マイク録音 (SCK captureMicrophone) のみ macOS 15+ で #available 分岐
     targets: [
         .executableTarget(
             name: "CapNote",

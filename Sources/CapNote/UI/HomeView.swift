@@ -136,11 +136,17 @@ struct HomeView: View {
             }
             Divider().overlay(Brand.border)
             settingRow(icon: "mic", label: "マイク") {
+                if !RecorderService.isMicrophoneSupported {
+                    Text("macOS 15 以降のみ")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Brand.textLo)
+                }
                 Toggle("", isOn: $app.settings.captureMicrophone)
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.small)
                     .tint(Brand.teal)
+                    .disabled(!RecorderService.isMicrophoneSupported)
             }
         }
         .card()

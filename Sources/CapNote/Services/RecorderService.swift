@@ -53,6 +53,13 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
     private let sampleQueue = DispatchQueue(label: "capnote.samples")
 
     var isRecording: Bool { stream != nil }
+
+    /// マイク録音 (SCK の captureMicrophone / .microphone 出力) は macOS 15+ 限定
+    static var isMicrophoneSupported: Bool {
+        if #available(macOS 15, *) { return true }
+        return false
+    }
+
     /// ディスプレイ構成変更などでストリームが死んだ時の通知
     var onStreamError: ((String) -> Void)?
 
@@ -129,7 +136,7 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
             scConfig.sampleRate = 48_000
             scConfig.channelCount = 2
         }
-        if config.captureMicrophone {
+        if config.captureMicrophone, #available(macOS 15, *) {
             scConfig.captureMicrophone = true // 初回はマイク権限のプロンプトが出る
         }
 
@@ -172,7 +179,7 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
             systemAudioInput = a
         }
         var micInput: AVAssetWriterInput?
-        if config.captureMicrophone {
+        if config.captureMicrophone, Self.isMicrophoneSupported {
             let a = AVAssetWriterInput(mediaType: .audio, outputSettings: [
                 AVFormatIDKey: kAudioFormatMPEG4AAC,
                 AVSampleRateKey: 48_000,
@@ -193,7 +200,7 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
         if config.captureSystemAudio {
             try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: sampleQueue)
         }
-        if config.captureMicrophone {
+        if config.captureMicrophone, #available(macOS 15, *) {
             try stream.addStreamOutput(self, type: .microphone, sampleHandlerQueue: sampleQueue)
         }
         try await stream.startCapture()
@@ -277,13 +284,14 @@ final class RecorderService: NSObject, SCStreamOutput, SCStreamDelegate {
             guard sessionStarted, let audioInput = systemAudioInput,
                   audioInput.isReadyForMoreMediaData else { return }
             audioInput.append(sampleBuffer)
-        case .microphone:
-            levelMic = Self.rmsLevel(of: sampleBuffer)
-            guard sessionStarted, let audioInput = micInput,
-                  audioInput.isReadyForMoreMediaData else { return }
-            audioInput.append(sampleBuffer)
-        @unknown default:
-            break
+        default:
+            // .microphone は macOS 15+ のみ (case パターンで直接書けないので default で判定)
+            if #available(macOS 15, *), type == .microphone {
+                levelMic = Self.rmsLevel(of: sampleBuffer)
+                guard sessionStarted, let audioInput = micInput,
+                      audioInput.isReadyForMoreMediaData else { return }
+                audioInput.append(sampleBuffer)
+            }
         }
     }
 
